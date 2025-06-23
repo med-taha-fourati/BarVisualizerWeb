@@ -5,7 +5,7 @@ import Visualizer from './VisualizerItself/Visualizer';
 const App = () => {
   return (
     <>
-    <Visualizer />
+      <Visualizer />
     </>
   )
 }
