@@ -60,11 +60,7 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
     //console.log("WebGL context initialized");
     //console.log("Bar Count: ", BAR_COUNT);
     //console.log(bands());
-
-    initAudioAnalyser().then(() => {
-        //console.log("Audio Analyser initialized");
-        
-        function render() {
+    function render() {
             gl?.clearColor(0, 0, 0, 1);
             gl?.clear(gl.COLOR_BUFFER_BIT);
 
@@ -79,13 +75,15 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
                 const bandEnergie = getBandEnergies(fftData, bands(), BAR_COUNT, FFT_SIZE);
                 const maxAmplitude = Math.max(...bandEnergie);
                 const normalizedHeights = bandEnergie.map(value => (value / maxAmplitude) * canvas.height);
-                setBarIndices(new Float32Array(normalizedHeights));
+                //setBarIndices(new Float32Array(normalizedHeights));
                 //console.log("Normalized Heights: ", normalizedHeights);
                 //console.log("Normalized Heights: ", normalizedHeights);
 
-                for (let i = 0; i < BAR_COUNT; i++) {
-                    const height = i * BAR_COUNT;
+                const AMPLITUDE = ((canvas.height / canvas.width) * canvas.height);
+                for (let i = 0; i < normalizedHeights.length; i++) {
+                    const height = AMPLITUDE + ((-i) / normalizedHeights.length) * AMPLITUDE;
                     gl?.uniform1f(uBarHeight, height);
+                    gl?.uniform1f(uBarCount, BAR_COUNT);
                     gl?.vertexAttrib1f(aBarIndex, i);
                     gl?.drawArrays(gl.POINTS, 0, i);
                 }
@@ -104,8 +102,13 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
             requestAnimationFrame(render);
         }
 
+
+    initAudioAnalyser().then(() => {
+        //console.log("Audio Analyser initialized");
         render();
+        
     }).catch((error) => {
         console.error("Error initializing audio analyser:", error);
     });
 }
+
