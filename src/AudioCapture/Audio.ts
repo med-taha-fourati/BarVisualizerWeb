@@ -1,4 +1,14 @@
-const FFT_SIZE = 512;
+export const FFT_SIZE = 2048;
+export const BAR_COUNT = 64;
+
+export const bands = () => {
+    const bandCount = BAR_COUNT;
+    const bandWidth = 20000 / bandCount;
+    return Array.from({ length: bandCount }, (_, i) => ({
+        start: i * bandWidth,
+        end: (i + 1) * bandWidth
+    }));
+}
 
 let dataArray: Float32Array | null = null
 let analyser: AnalyserNode | null = null;
@@ -26,23 +36,6 @@ async function getAudioStream(): Promise<MediaStream> {
     }
 }
 
-async function getFFTData(stream: MediaStream, fftSize: number = FFT_SIZE): Promise<Float32Array> {
-    const audioContext = new window.AudioContext();
-    const source = audioContext.createMediaStreamSource(stream);
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = fftSize;
-    source.connect(analyser);
-
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Float32Array(bufferLength);
-
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    analyser.getFloatFrequencyData(dataArray);
-
-    return dataArray;
-}
-
 export async function initAudioAnalyser(fftSize: number = FFT_SIZE): Promise<AnalyserNode> {
     const stream = await getAudioStream();
     const audioContext = new window.AudioContext();
@@ -64,7 +57,20 @@ export function getCurrentFFTData(): Float32Array {
     return dataArray;
 }
 
-export async function getFFTTable(): Promise<Float32Array> {
-    const dataStream: MediaStream = await getAudioStream();
-    return getFFTData(dataStream, FFT_SIZE);
+export const getBandEnergies = (
+    fftData: Float32Array,
+    bands: {start: number, end: number}[],
+    sampleRate: number,
+    fftSize: number
+) => {
+    return bands.map(({start: fLow, end: fHigh}) => {
+        const binLow = Math.floor(fLow * fftSize / sampleRate);
+        const binHigh = Math.min(Math.ceil(fHigh * fftSize / sampleRate), fftData.length - 1);
+        let sum = 0, count = 0;
+        for (let i = binLow; i <= binHigh; i++) {
+            sum += fftData[i];
+            count++;
+        }
+        return count > 0 ? sum / count : 0;
+    });
 }

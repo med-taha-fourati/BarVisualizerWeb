@@ -1,6 +1,4 @@
-import { initAudioAnalyser, getFFTTable, getCurrentFFTData } from "../AudioCapture/Audio";
-
-const BAR_COUNT = 64;
+import { initAudioAnalyser,  getCurrentFFTData, BAR_COUNT, bands, getBandEnergies, FFT_SIZE } from "../AudioCapture/Audio";
 
 export const WebGLInit = (canvas: HTMLCanvasElement) => {
     const gl = canvas.getContext("webgl");
@@ -39,19 +37,11 @@ export function createProgram(gl: WebGLRenderingContext, vsSource: string, fsSou
     return program;
 }
 
-export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, canvas: HTMLCanvasElement) {
+export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, canvas: HTMLCanvasElement, setBarIndices: (indices: Float32Array) => void) {
     
-    let barIndices = new Float32Array(BAR_COUNT).fill(0);
+    const barIndices = new Float32Array(BAR_COUNT).fill(0);
     
     barIndices.forEach((_, i) => barIndices[i] = i);
-
-    getFFTTable().then((fftData) => {
-        barIndices = fftData;
-    }).catch(() => {
-        throw new Error("Error fetching FFT data:");
-    });
-
-    console.log("Bar Indices: ", barIndices);
         
     const barIndexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, barIndexBuffer);
@@ -67,7 +57,12 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
     const uGapY = gl.getUniformLocation(program, "uGapY");
     const uResolutionX = gl.getUniformLocation(program, "uResolutionX");
         
-    console.log("WebGL context initialized");
+    //console.log("WebGL context initialized");
+    //console.log("Bar Count: ", BAR_COUNT);
+    //console.log(bands());
+
+    initAudioAnalyser().then(() => {
+        //console.log("Audio Analyser initialized");
         
         function render() {
             gl?.clearColor(0, 0, 0, 1);
@@ -79,27 +74,23 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
             gl?.uniform1f(uResolutionX, canvas.width);
 
             //console.log(getFFTTable());
-            initAudioAnalyser().then(() => {
-                // if (fftData.length !== BAR_COUNT) {
-                //     throw new Error(`FFT data length (${fftData.length}) does not match BAR_COUNT (${BAR_COUNT})`);
-                // }
                 const fftData = getCurrentFFTData();
-                console.log("FFT Data: ", fftData);
-                const maxAmplitude = Math.max(...fftData);
-                const normalizedHeights = fftData.map(value => (value / maxAmplitude) * canvas.height);
+                //console.log("FFT Data: ", fftData);
+                const bandEnergie = getBandEnergies(fftData, bands(), BAR_COUNT, FFT_SIZE);
+                const maxAmplitude = Math.max(...bandEnergie);
+                const normalizedHeights = bandEnergie.map(value => (value / maxAmplitude) * canvas.height);
+                setBarIndices(new Float32Array(normalizedHeights));
+                //console.log("Normalized Heights: ", normalizedHeights);
                 //console.log("Normalized Heights: ", normalizedHeights);
 
-                for (let i = 0; i < normalizedHeights.length; i++) {
-                    const height = normalizedHeights[i];
+                for (let i = 0; i < BAR_COUNT; i++) {
+                    const height = i * BAR_COUNT;
                     gl?.uniform1f(uBarHeight, height);
                     gl?.vertexAttrib1f(aBarIndex, i);
                     gl?.drawArrays(gl.POINTS, 0, i);
                 }
-
                 //console.clear();
-            }).catch((error) => {
-                console.error("Error fetching FFT data:", error);
-            });
+            
 
             // const AMPLITUDE = ((canvas.height / canvas.width) * canvas.height);
             // for (let i = 0; i < BAR_COUNT; i++) {
@@ -114,4 +105,7 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
         }
 
         render();
+    }).catch((error) => {
+        console.error("Error initializing audio analyser:", error);
+    });
 }
