@@ -70,22 +70,26 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
             gl?.uniform1f(uResolutionX, canvas.width);
 
             //console.log(getFFTTable());
-                const fftData = getCurrentFFTData();
-                //console.log("FFT Data: ", fftData);
+                let fftData = getCurrentFFTData();
+                fftData = fftData.map((value) => {
+                    return ((value + 120) > 0) ? value + 120 : 0;
+                });
+                //fftData.forEach((value, index) => console.log(`FFT Data[${index}]: ${value}`));
                 const bandEnergie = getBandEnergies(fftData, bands(), BAR_COUNT, FFT_SIZE);
-                const maxAmplitude = Math.max(...bandEnergie);
-                const normalizedHeights = bandEnergie.map(value => (value / maxAmplitude) * canvas.height);
+                //bandEnergie.forEach((value, index) => console.log(`Band Energie[${index}]: ${value}`));
+                //const maxAmplitude = Math.max(...bandEnergie);
+                //const normalizedHeights = bandEnergie.map(value => (value / maxAmplitude) * canvas.height);
                 //setBarIndices(new Float32Array(normalizedHeights));
                 //console.log("Normalized Heights: ", normalizedHeights);
                 //console.log("Normalized Heights: ", normalizedHeights);
 
                 const AMPLITUDE = ((canvas.height / canvas.width) * canvas.height);
-                for (let i = 0; i < normalizedHeights.length; i++) {
-                    const height = AMPLITUDE + ((-i) / normalizedHeights.length) * AMPLITUDE;
+                for (let i = 0; i < bandEnergie.length; i++) {
+                    const height = (((bandEnergie[i])));
                     gl?.uniform1f(uBarHeight, height);
-                    gl?.uniform1f(uBarCount, BAR_COUNT);
+                    gl?.uniform1f(uBarCount, bandEnergie.length);
                     gl?.vertexAttrib1f(aBarIndex, i);
-                    gl?.drawArrays(gl.POINTS, 0, i);
+                    gl?.drawArrays(gl.POINTS, 0, bandEnergie[i]);
                 }
                 //console.clear();
             
@@ -102,11 +106,8 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
             requestAnimationFrame(render);
         }
 
-
     initAudioAnalyser().then(() => {
-        //console.log("Audio Analyser initialized");
         render();
-        
     }).catch((error) => {
         console.error("Error initializing audio analyser:", error);
     });
