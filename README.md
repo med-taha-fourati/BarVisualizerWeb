@@ -1,3 +1,7 @@
+# BarVisualizerWeb
+
+Linear FFT Bar visualizer that works on tabs, currently supporting chromium based browsers cuz firefox needs a gesture or something
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

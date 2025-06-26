@@ -79,3 +79,5 @@ export const getBandEnergies = (
         return count > 0 ? sum / count : 0;
     });
 }
+
+//TODO: make the fft logarithmic
