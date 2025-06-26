@@ -37,7 +37,13 @@ export function createProgram(gl: WebGLRenderingContext, vsSource: string, fsSou
     return program;
 }
 
-export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, canvas: HTMLCanvasElement, setBarIndices: (indices: Float32Array) => void, barCount: number = BAR_COUNT) {
+export function glContextInit(gl: WebGLRenderingContext, 
+                            program: WebGLProgram, 
+                            canvas: HTMLCanvasElement, 
+                            setBarIndices: (indices: Float32Array) => void, 
+                            barCount: number = BAR_COUNT,
+                            amplitude: number
+                        ) {
     
     const barIndices = new Float32Array(barCount).fill(0);
     
@@ -61,6 +67,7 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
             gl?.clearColor(0, 0, 0, 1);
             gl?.clear(gl.COLOR_BUFFER_BIT);
 
+            //NOTE: inital settings
             gl?.uniform1f(uBarCount, barCount);
             gl?.uniform1f(uResolutionY, canvas.height);
             gl?.uniform1f(uGapY, 0.8);
@@ -76,13 +83,13 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
             const maxEnergy = Math.max(...bandEnergies);
             const normalizedHeights = bandEnergies.map(e => {
                 if (maxEnergy === minEnergy) return 0;
-                return ((e - minEnergy) / (maxEnergy - minEnergy)) * canvas.height / 2;
+                return ((e - minEnergy) / (maxEnergy - minEnergy)) * (canvas.height / 2);
             });
 
             let height = 0;
 
             for (let i = 0; i < normalizedHeights.length; i++) {
-                height = normalizedHeights[i];
+                height = amplitude + normalizedHeights[i];
                 gl.uniform1f(uBarHeight, height);
                 gl.uniform1f(uBarCount, normalizedHeights.length);
                 gl.vertexAttrib1f(aBarIndex, i);

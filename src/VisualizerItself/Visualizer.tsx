@@ -6,6 +6,8 @@ const Visualizer: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [barIndices, setBarIndices] = useState<Float32Array | null>(null);
     const [barCount, setBarCount] = useState<number>(192);
+    const [height, setHeight] = useState<number>(0);
+    const [open, setOpen] = useState<boolean>(false);
 
     useEffect(() => {
         
@@ -24,24 +26,15 @@ const Visualizer: React.FC = () => {
         const program = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
         gl.useProgram(program);
         
-        glContextInit(gl, program, canvas, setBarIndices, barCount);
+        glContextInit(gl, program, canvas, setBarIndices, barCount, height);
 
         return () => {
             window.removeEventListener("resize", resize);
         };
-    }, [barIndices, barCount]);
+    }, [barIndices, barCount, height]);
 
     return (
         <>
-        {/* <div style={{ 
-            position: "absolute", 
-            top: 0, 
-            left: 0, 
-            color: "white", 
-            zIndex: 1, 
-            backgroundColor: "rgb(131, 131, 131)" }}>
-            barIndices: {barIndices ? barIndices.join(", ") : "Loading..."}
-        </div> */}
         <div>
         <canvas
             ref={canvasRef}
@@ -53,12 +46,20 @@ const Visualizer: React.FC = () => {
             top: 0,
             left: 0,
             padding: "10px",
-            backgroundColor: "rgba(0, 0, 0, 0.0)",
+            backgroundColor: "rgba(0, 0, 0, 0.37)",
             color: "white",
-            textAlign: "center",
             zIndex: 1
+
         }}>
-            <span style={{ color: "white" }}>Bar Count: <input type="range" min="1" max="512" value={barCount} onChange={(e) => setBarCount(Number(e.target.value))} />{barCount}</span>
+            <button onClick={() => setOpen(!open)}>{open ? "Close" : "Open"}</button>
+            <div style={{ display: open ? "block" : "none" }}>
+                <p>
+                    <span style={{ color: "white" }}>Bar Count: <input type="range" min="1" max="512" value={barCount} onChange={(e) => setBarCount(Number(e.target.value))} />{barCount}</span>
+                </p>
+                <p>
+                    <span style={{ color: "white" }}>Amplitude: <input type="range" min="0" max="200" value={height} onChange={(e) => setHeight(Number(e.target.value))} />{height}</span>
+                </p>
+            </div>
         </div>
         </>
     );
