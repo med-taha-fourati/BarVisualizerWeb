@@ -57,9 +57,6 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
     const uGapY = gl.getUniformLocation(program, "uGapY");
     const uResolutionX = gl.getUniformLocation(program, "uResolutionX");
         
-    //console.log("WebGL context initialized");
-    //console.log("Bar Count: ", BAR_COUNT);
-    //console.log(bands());
     function render() {
             gl?.clearColor(0, 0, 0, 1);
             gl?.clear(gl.COLOR_BUFFER_BIT);
@@ -69,39 +66,26 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
             gl?.uniform1f(uGapY, 0.8);
             gl?.uniform1f(uResolutionX, canvas.width);
 
-            //console.log(getFFTTable());
-                let fftData = getCurrentFFTData();
-                fftData = fftData.map((value) => {
-                    return ((value + 120) > 0) ? value + 120 : 0;
-                });
-                //fftData.forEach((value, index) => console.log(`FFT Data[${index}]: ${value}`));
-                const bandEnergie = getBandEnergies(fftData, bands(), BAR_COUNT, FFT_SIZE);
-                //bandEnergie.forEach((value, index) => console.log(`Band Energie[${index}]: ${value}`));
-                //const maxAmplitude = Math.max(...bandEnergie);
-                //const normalizedHeights = bandEnergie.map(value => (value / maxAmplitude) * canvas.height);
-                //setBarIndices(new Float32Array(normalizedHeights));
-                //console.log("Normalized Heights: ", normalizedHeights);
-                //console.log("Normalized Heights: ", normalizedHeights);
+            const fftData = getCurrentFFTData();
+ 
+            const bandDefs = bands(48000);
 
-                const AMPLITUDE = ((canvas.height / canvas.width) * canvas.height);
-                for (let i = 0; i < bandEnergie.length; i++) {
-                    const height = (((bandEnergie[i])));
-                    gl?.uniform1f(uBarHeight, height);
-                    gl?.uniform1f(uBarCount, bandEnergie.length);
-                    gl?.vertexAttrib1f(aBarIndex, i);
-                    gl?.drawArrays(gl.POINTS, 0, bandEnergie[i]);
-                }
-                //console.clear();
-            
+            const bandEnergies = getBandEnergies(fftData, bandDefs, 48000, FFT_SIZE);
 
-            // const AMPLITUDE = ((canvas.height / canvas.width) * canvas.height);
-            // for (let i = 0; i < BAR_COUNT; i++) {
-            //     const height = AMPLITUDE + ((-i) / BAR_COUNT) * AMPLITUDE;
-            //     gl?.uniform1f(uBarHeight, height);
-            //     gl?.uniform1f(uBarCount, BAR_COUNT);
-            //     gl?.vertexAttrib1f(aBarIndex, i);
-            //     gl?.drawArrays(gl.POINTS, 0, i);
-            // }
+            const minEnergy = Math.min(...bandEnergies);
+            const maxEnergy = Math.max(...bandEnergies);
+            const normalizedHeights = bandEnergies.map(e => {
+                if (maxEnergy === minEnergy) return 0;
+                return ((e - minEnergy) / (maxEnergy - minEnergy)) * canvas.height / 2;
+            });
+
+            for (let i = 0; i < normalizedHeights.length; i++) {
+                const height = normalizedHeights[i];
+                gl.uniform1f(uBarHeight, height);
+                gl.uniform1f(uBarCount, normalizedHeights.length);
+                gl.vertexAttrib1f(aBarIndex, i);
+                gl.drawArrays(gl.POINTS, i, 1);
+            }
 
             requestAnimationFrame(render);
         }

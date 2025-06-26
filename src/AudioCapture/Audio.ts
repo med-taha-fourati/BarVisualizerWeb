@@ -1,9 +1,10 @@
 export const FFT_SIZE = 2048;
 export const BAR_COUNT = 64;
 
-export const bands = () => {
+export const bands = (sampleRate: number) => {
+    const halvedSampleRate = sampleRate / 2;
     const bandCount = BAR_COUNT;
-    const bandWidth = 20000 / bandCount;
+    const bandWidth = halvedSampleRate / bandCount;
     return Array.from({ length: bandCount }, (_, i) => ({
         start: i * bandWidth,
         end: (i + 1) * bandWidth

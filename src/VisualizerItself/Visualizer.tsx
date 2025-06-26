@@ -38,7 +38,7 @@ const Visualizer: React.FC = () => {
             left: 0, 
             color: "white", 
             zIndex: 1, 
-            backgroundColor: "rgba(0,0,0,0)" }}>
+            backgroundColor: "rgb(131, 131, 131)" }}>
             barIndices: {barIndices ? barIndices.join(", ") : "Loading..."}
         </div> */}
         <canvas
