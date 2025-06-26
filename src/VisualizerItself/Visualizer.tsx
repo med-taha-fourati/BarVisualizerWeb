@@ -23,7 +23,7 @@ const Visualizer: React.FC = () => {
         const program = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
         gl.useProgram(program);
         
-        glContextInit(gl, program, canvas, setBarIndices);
+        glContextInit(gl, program, canvas, setBarIndices, 192);
 
         return () => {
             window.removeEventListener("resize", resize);
@@ -41,10 +41,12 @@ const Visualizer: React.FC = () => {
             backgroundColor: "rgb(131, 131, 131)" }}>
             barIndices: {barIndices ? barIndices.join(", ") : "Loading..."}
         </div> */}
+        <div>
         <canvas
             ref={canvasRef}
             style={{ width: "100vw", height: "100vh", display: "block" }}
         />
+        </div>
         </>
     );
 };

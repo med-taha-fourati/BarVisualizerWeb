@@ -1,9 +1,9 @@
 export const FFT_SIZE = 2048;
 export const BAR_COUNT = 64;
 
-export const bands = (sampleRate: number) => {
+export const bands = (sampleRate: number, barCount: number = BAR_COUNT) => {
     const halvedSampleRate = sampleRate / 2;
-    const bandCount = BAR_COUNT;
+    const bandCount = barCount;
     const bandWidth = halvedSampleRate / bandCount;
     return Array.from({ length: bandCount }, (_, i) => ({
         start: i * bandWidth,
@@ -16,17 +16,17 @@ let analyser: AnalyserNode | null = null;
 
 async function getAudioStream(): Promise<MediaStream> {
     //console.log(navigator.mediaDevices);
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
         try {
             //const constraints = await navigator.mediaDevices.getSupportedConstraints();
             //console.log("i have been accessed", constraints);
-            const stream = await navigator.mediaDevices.getUserMedia({
+            const stream = await navigator.mediaDevices.getDisplayMedia({
                 audio: {
                     echoCancellation: false,
                     noiseSuppression: false,
                     sampleRate: 48000
                 },
-                video: false
+                video: true
             });
             return stream;
         } catch (err) {

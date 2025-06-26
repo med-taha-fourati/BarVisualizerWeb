@@ -37,9 +37,9 @@ export function createProgram(gl: WebGLRenderingContext, vsSource: string, fsSou
     return program;
 }
 
-export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, canvas: HTMLCanvasElement, setBarIndices: (indices: Float32Array) => void) {
+export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, canvas: HTMLCanvasElement, setBarIndices: (indices: Float32Array) => void, barCount: number = BAR_COUNT) {
     
-    const barIndices = new Float32Array(BAR_COUNT).fill(0);
+    const barIndices = new Float32Array(barCount).fill(0);
     
     barIndices.forEach((_, i) => barIndices[i] = i);
         
@@ -61,14 +61,14 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
             gl?.clearColor(0, 0, 0, 1);
             gl?.clear(gl.COLOR_BUFFER_BIT);
 
-            gl?.uniform1f(uBarCount, BAR_COUNT);
+            gl?.uniform1f(uBarCount, barCount);
             gl?.uniform1f(uResolutionY, canvas.height);
             gl?.uniform1f(uGapY, 0.8);
             gl?.uniform1f(uResolutionX, canvas.width);
 
             const fftData = getCurrentFFTData();
  
-            const bandDefs = bands(48000);
+            const bandDefs = bands(48000, barCount);
 
             const bandEnergies = getBandEnergies(fftData, bandDefs, 48000, FFT_SIZE);
 
