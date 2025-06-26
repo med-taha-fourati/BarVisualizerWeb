@@ -79,8 +79,10 @@ export function glContextInit(gl: WebGLRenderingContext, program: WebGLProgram, 
                 return ((e - minEnergy) / (maxEnergy - minEnergy)) * canvas.height / 2;
             });
 
+            let height = 0;
+
             for (let i = 0; i < normalizedHeights.length; i++) {
-                const height = normalizedHeights[i];
+                height = normalizedHeights[i];
                 gl.uniform1f(uBarHeight, height);
                 gl.uniform1f(uBarCount, normalizedHeights.length);
                 gl.vertexAttrib1f(aBarIndex, i);

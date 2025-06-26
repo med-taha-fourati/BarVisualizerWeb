@@ -1,6 +1,8 @@
 export const FFT_SIZE = 2048;
 export const BAR_COUNT = 64;
 
+let stream: MediaStream | null = null;
+
 export const bands = (sampleRate: number, barCount: number = BAR_COUNT) => {
     const halvedSampleRate = sampleRate / 2;
     const bandCount = barCount;
@@ -38,7 +40,9 @@ async function getAudioStream(): Promise<MediaStream> {
 }
 
 export async function initAudioAnalyser(fftSize: number = FFT_SIZE): Promise<AnalyserNode> {
-    const stream = await getAudioStream();
+    if (stream === null) {
+        stream = await getAudioStream();
+    }
     const audioContext = new window.AudioContext();
     const source = audioContext.createMediaStreamSource(stream);
     analyser = audioContext.createAnalyser();
