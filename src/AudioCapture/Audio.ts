@@ -24,6 +24,24 @@ export const logarithmicBands = (sampleRate: number, barCount: number = BAR_COUN
     });
 }
 
+export const STFTBands = (sampleRate: number, barCount: number = BAR_COUNT) => {
+    const halvedSampleRate = sampleRate / 2;
+    const bandCount = barCount;
+    const bandWidth = halvedSampleRate / bandCount;
+    const constantWidth: number[] = [];
+    const i = 0;
+    for (let j = bandWidth; j <= halvedSampleRate; j += bandWidth) {
+        constantWidth[i] = j;
+    }
+
+    const resultArray: { start: number, end: number } [] = [];
+    constantWidth.forEach((item, i) => {
+        resultArray[i] = logarithmicBands(item, bandWidth).forEach(e => e);
+    })
+
+    return resultArray;
+}
+
 let dataArray: Float32Array | null = null
 let analyser: AnalyserNode | null = null;
 
@@ -50,6 +68,7 @@ async function getAudioStream(): Promise<MediaStream> {
     }
 }
 
+//NOTE: this initializes the audio fft analyzer
 export async function initAudioAnalyser(fftSize: number = FFT_SIZE): Promise<AnalyserNode> {
     if (stream === null) {
         stream = await getAudioStream();

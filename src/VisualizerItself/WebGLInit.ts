@@ -1,4 +1,4 @@
-import { initAudioAnalyser,  getCurrentFFTData, BAR_COUNT, bands, getBandEnergies, FFT_SIZE, logarithmicBands } from "../AudioCapture/Audio";
+import { initAudioAnalyser,  getCurrentFFTData, BAR_COUNT, bands, getBandEnergies, FFT_SIZE, logarithmicBands, STFTBands } from "../AudioCapture/Audio";
 
 export const WebGLInit = (canvas: HTMLCanvasElement) => {
     const gl = canvas.getContext("webgl");
@@ -43,7 +43,8 @@ export function glContextInit(gl: WebGLRenderingContext,
                             setBarIndices: (indices: Float32Array) => void, 
                             barCount: number = BAR_COUNT,
                             amplitude: number,
-                            barType: "linear" | "logarithmic" = "linear"
+                            barType: "linear" | "logarithmic" = "linear",
+                            setBandWidth: React.Dispatch<React.SetStateAction<number[]>>
                         ) {
     
     const barIndices = new Float32Array(barCount).fill(0);
@@ -77,16 +78,19 @@ export function glContextInit(gl: WebGLRenderingContext,
             const fftData = getCurrentFFTData();
 
             let bandDefs: { start: number, end: number }[];
-            switch (barType) {
-                case "linear":
-                    bandDefs = bands(48000, barCount);
-                    break;
-                case "logarithmic":
-                    bandDefs = logarithmicBands(48000, barCount);
-                    break;
-                default:
-                    throw new Error("Unknown bar type");
-            }
+            // switch (barType) {
+            //     case "linear":
+            //         bandDefs = bands(48000, barCount);
+            //         break;
+            //     case "logarithmic":
+            //         bandDefs = logarithmicBands(48000, barCount);
+            //         break;
+            //     default:
+            //         throw new Error("Unknown bar type");
+            // }
+            bandDefs = STFTBands(48000, barCount);
+
+            //setBandWidth(STFTBands(48000, barCount));
 
             const bandEnergies = getBandEnergies(fftData, bandDefs, 48000, FFT_SIZE);
 

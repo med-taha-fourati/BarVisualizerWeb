@@ -9,6 +9,7 @@ const Visualizer: React.FC = () => {
     const [height, setHeight] = useState<number>(0);
     const [open, setOpen] = useState<boolean>(false);
     const [barType, setBarType] = useState<"linear" | "logarithmic">("linear");
+    const [bandWidth, setBandWidth] = useState<number[]>([]);
 
     useEffect(() => {
         
@@ -27,7 +28,7 @@ const Visualizer: React.FC = () => {
         const program = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
         gl.useProgram(program);
         
-        glContextInit(gl, program, canvas, setBarIndices, barCount, height, barType);
+        glContextInit(gl, program, canvas, setBarIndices, barCount, height, barType, setBandWidth);
 
         return () => {
             window.removeEventListener("resize", resize);
@@ -75,6 +76,9 @@ const Visualizer: React.FC = () => {
                         onChange={() => setBarType("logarithmic")}
                         checked={barType === "logarithmic"}
                     /> Logarithmic
+                </p>
+                <p>
+                    {bandWidth}
                 </p>
             </div>
         </div>
