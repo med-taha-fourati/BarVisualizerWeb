@@ -13,6 +13,17 @@ export const bands = (sampleRate: number, barCount: number = BAR_COUNT) => {
     }));
 }
 
+export const logarithmicBands = (sampleRate: number, barCount: number = BAR_COUNT) => {
+    const halvedSampleRate = sampleRate / 2;
+    const bandCount = barCount;
+    const bandWidth = halvedSampleRate / bandCount;
+    return Array.from({ length: bandCount }, (_, i) => {
+        const start = Math.pow(bandCount, i / bandCount) * bandWidth;
+        const end = Math.pow(bandCount, (i + 1) / bandCount) * bandWidth;
+        return { start, end };
+    });
+}
+
 let dataArray: Float32Array | null = null
 let analyser: AnalyserNode | null = null;
 

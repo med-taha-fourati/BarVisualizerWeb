@@ -8,6 +8,7 @@ const Visualizer: React.FC = () => {
     const [barCount, setBarCount] = useState<number>(192);
     const [height, setHeight] = useState<number>(0);
     const [open, setOpen] = useState<boolean>(false);
+    const [barType, setBarType] = useState<"linear" | "logarithmic">("linear");
 
     useEffect(() => {
         
@@ -26,12 +27,12 @@ const Visualizer: React.FC = () => {
         const program = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
         gl.useProgram(program);
         
-        glContextInit(gl, program, canvas, setBarIndices, barCount, height);
+        glContextInit(gl, program, canvas, setBarIndices, barCount, height, barType);
 
         return () => {
             window.removeEventListener("resize", resize);
         };
-    }, [barIndices, barCount, height]);
+    }, [barIndices, barCount, height, barType]);
 
     return (
         <>
@@ -58,6 +59,22 @@ const Visualizer: React.FC = () => {
                 </p>
                 <p>
                     <span style={{ color: "white" }}>Amplitude: <input type="range" min="0" max="200" value={height} onChange={(e) => setHeight(Number(e.target.value))} />{height}</span>
+                </p>
+                <p>
+                    <input
+                        type="radio"
+                        name="barType"
+                        value="linear"
+                        onChange={() => setBarType("linear")}
+                        checked={barType === "linear"}
+                    /> Linear
+                    <input
+                        type="radio"
+                        name="barType"
+                        value="logarithmic"
+                        onChange={() => setBarType("logarithmic")}
+                        checked={barType === "logarithmic"}
+                    /> Logarithmic
                 </p>
             </div>
         </div>

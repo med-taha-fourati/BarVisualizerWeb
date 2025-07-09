@@ -1,4 +1,4 @@
-import { initAudioAnalyser,  getCurrentFFTData, BAR_COUNT, bands, getBandEnergies, FFT_SIZE } from "../AudioCapture/Audio";
+import { initAudioAnalyser,  getCurrentFFTData, BAR_COUNT, bands, getBandEnergies, FFT_SIZE, logarithmicBands } from "../AudioCapture/Audio";
 
 export const WebGLInit = (canvas: HTMLCanvasElement) => {
     const gl = canvas.getContext("webgl");
@@ -42,7 +42,8 @@ export function glContextInit(gl: WebGLRenderingContext,
                             canvas: HTMLCanvasElement, 
                             setBarIndices: (indices: Float32Array) => void, 
                             barCount: number = BAR_COUNT,
-                            amplitude: number
+                            amplitude: number,
+                            barType: "linear" | "logarithmic" = "linear"
                         ) {
     
     const barIndices = new Float32Array(barCount).fill(0);
@@ -74,8 +75,18 @@ export function glContextInit(gl: WebGLRenderingContext,
             gl?.uniform1f(uResolutionX, canvas.width);
 
             const fftData = getCurrentFFTData();
- 
-            const bandDefs = bands(48000, barCount);
+
+            let bandDefs: { start: number, end: number }[];
+            switch (barType) {
+                case "linear":
+                    bandDefs = bands(48000, barCount);
+                    break;
+                case "logarithmic":
+                    bandDefs = logarithmicBands(48000, barCount);
+                    break;
+                default:
+                    throw new Error("Unknown bar type");
+            }
 
             const bandEnergies = getBandEnergies(fftData, bandDefs, 48000, FFT_SIZE);
 
