@@ -24,23 +24,38 @@ export const logarithmicBands = (sampleRate: number, barCount: number = BAR_COUN
     });
 }
 
-export const STFTBands = (sampleRate: number, barCount: number = BAR_COUNT) => {
-    const halvedSampleRate = sampleRate / 2;
-    const bandCount = barCount;
-    const bandWidth = halvedSampleRate / bandCount;
-    const constantWidth: number[] = [];
-    const i = 0;
-    for (let j = bandWidth; j <= halvedSampleRate; j += bandWidth) {
-        constantWidth[i] = j;
+export const STFTBands = (maxFreq: number, barCount: number = BAR_COUNT): { start: number, end: number }[] => {
+    // const halvedSampleRate = sampleRate / 2;
+    // const bandCount = barCount;
+    // const bandWidth = halvedSampleRate / bandCount;
+    // const constantWidth: number[] = [];
+    // let i = 0;
+    // for (let j = bandWidth; j <= halvedSampleRate; j += bandWidth) {
+    //     constantWidth[i] = j;
+    //     i++; // this works
+    // }
+
+    // const resultArray: { start: number, end: number } [] = [];
+    // constantWidth.forEach((item) => {
+    //     const result = Array.from({ length: item }, (_, i) => {
+    //         const start = Math.pow(item, i / item) * bandWidth;
+    //         const end = Math.pow(item, i / item) * bandWidth;
+    //         return { start, end };
+    //     });
+    //     result.forEach((e) => {resultArray.push(e)});
+    // });
+    const resultArray: { start: number, end: number }[] = [];
+    const minL = Math.log10(20);
+    const maxL = Math.log10(maxFreq / 2);
+    const step = (maxL - minL) / barCount;
+
+    for (let i = 0; i < barCount; i++) {
+        const start = Math.pow(10, minL + i * step);
+        const end = Math.pow(10, minL + (i + 1) * step);
+        resultArray.push({ start, end });
     }
-
-    const resultArray: { start: number, end: number } [] = [];
-    constantWidth.forEach((item, i) => {
-        resultArray[i] = logarithmicBands(item, bandWidth).forEach(e => e);
-    })
-
     return resultArray;
-}
+};
 
 let dataArray: Float32Array | null = null
 let analyser: AnalyserNode | null = null;

@@ -43,8 +43,7 @@ export function glContextInit(gl: WebGLRenderingContext,
                             setBarIndices: (indices: Float32Array) => void, 
                             barCount: number = BAR_COUNT,
                             amplitude: number,
-                            barType: "linear" | "logarithmic" = "linear",
-                            setBandWidth: React.Dispatch<React.SetStateAction<number[]>>
+                            barType: "linear" | "logarithmic" | "STFTLogged" = "linear",
                         ) {
     
     const barIndices = new Float32Array(barCount).fill(0);
@@ -78,17 +77,19 @@ export function glContextInit(gl: WebGLRenderingContext,
             const fftData = getCurrentFFTData();
 
             let bandDefs: { start: number, end: number }[];
-            // switch (barType) {
-            //     case "linear":
-            //         bandDefs = bands(48000, barCount);
-            //         break;
-            //     case "logarithmic":
-            //         bandDefs = logarithmicBands(48000, barCount);
-            //         break;
-            //     default:
-            //         throw new Error("Unknown bar type");
-            // }
-            bandDefs = STFTBands(48000, barCount);
+            switch (barType) {
+                case "linear":
+                    bandDefs = bands(48000, barCount);
+                    break;
+                case "logarithmic":
+                    bandDefs = logarithmicBands(48000, barCount);
+                    break;
+                case "STFTLogged":
+                    bandDefs = STFTBands(48000, barCount);
+                    break;
+                default:
+                    throw new Error("Unknown bar type");
+            }
 
             //setBandWidth(STFTBands(48000, barCount));
 

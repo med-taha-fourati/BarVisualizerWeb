@@ -8,8 +8,7 @@ const Visualizer: React.FC = () => {
     const [barCount, setBarCount] = useState<number>(192);
     const [height, setHeight] = useState<number>(0);
     const [open, setOpen] = useState<boolean>(false);
-    const [barType, setBarType] = useState<"linear" | "logarithmic">("linear");
-    const [bandWidth, setBandWidth] = useState<number[]>([]);
+    const [barType, setBarType] = useState<"linear" | "logarithmic" | "STFTLogged">("linear");
 
     useEffect(() => {
         
@@ -28,7 +27,7 @@ const Visualizer: React.FC = () => {
         const program = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
         gl.useProgram(program);
         
-        glContextInit(gl, program, canvas, setBarIndices, barCount, height, barType, setBandWidth);
+        glContextInit(gl, program, canvas, setBarIndices, barCount, height, barType);
 
         return () => {
             window.removeEventListener("resize", resize);
@@ -76,9 +75,13 @@ const Visualizer: React.FC = () => {
                         onChange={() => setBarType("logarithmic")}
                         checked={barType === "logarithmic"}
                     /> Logarithmic
-                </p>
-                <p>
-                    {bandWidth}
+                    <input
+                        type="radio"
+                        name="barType"
+                        value="STFTLogged"
+                        onChange={() => setBarType("STFTLogged")}
+                        checked={barType === "STFTLogged"}
+                    /> STFT (Logarithmic)
                 </p>
             </div>
         </div>
